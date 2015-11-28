@@ -6,7 +6,6 @@ import android.content.CursorLoader;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.CancellationSignal;
 import android.util.Log;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -40,7 +38,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mHostNamesAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,
+        mHostNamesAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
                 IP_LIST);
         mIpSelection = (Spinner) findViewById(R.id.ip_selector);
         mIpSelection.setAdapter(mHostNamesAdapter);

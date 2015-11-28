@@ -1,10 +1,8 @@
 package cat.guillempages.stairs;
 
-import android.app.SearchManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.AsyncTask;
 import android.os.CancellationSignal;
 import android.util.Log;

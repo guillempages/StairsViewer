@@ -3,10 +3,7 @@ package cat.guillempages.stairs;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
 import android.widget.ResourceCursorAdapter;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
 /**
@@ -25,13 +22,13 @@ public class StairsAdapter extends ResourceCursorAdapter {
             final TextView irValue = (TextView) view.findViewById(R.id.ir_value);
             final TextView irThreshold = (TextView) view.findViewById(R.id.ir_threshold);
             final TextView lightValue = (TextView) view.findViewById(R.id.light_value);
-            final TextView tempValue = (TextView) view.findViewById(R.id.temp_value);
+            final TextView lightThreshold = (TextView) view.findViewById(R.id.light_threshold);
 
             rowIdView.setText(cursor.getString(cursor.getColumnIndex(StairsProvider._ID)));
             irValue.setText(cursor.getString(cursor.getColumnIndex(StairsProvider.IR_VALUE)));
             irThreshold.setText(cursor.getString(cursor.getColumnIndex(StairsProvider.IR_THRESHOLD)));
             lightValue.setText(cursor.getString(cursor.getColumnIndex(StairsProvider.LIGHT_VALUE)));
-            tempValue.setText(cursor.getString(cursor.getColumnIndex(StairsProvider.TEMPERATURE_VALUE)));
+            lightThreshold.setText(cursor.getString(cursor.getColumnIndex(StairsProvider.LIGHT_THRESHOLD)));
         }
     }
 }
