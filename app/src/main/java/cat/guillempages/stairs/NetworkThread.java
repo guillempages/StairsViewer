@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.net.Socket;
 
 /**
+ * Background thread to receive data from a socket.
+ * <p/>
  * Created by guillem on 28/11/2015.
  */
 public class NetworkThread extends AsyncTask<Void, Void, Void> {
@@ -53,27 +55,32 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
 
             InputStream stream = mSocket.getInputStream();
             int stepCount = stream.read();
-            stream.read(); //newline
             Log.d(TAG, "Received step count: " + stepCount);
+            if (stream.read() < 0) {//newline
+                return null;
+            }
             ContentValues values = new ContentValues();
             for (int i = 0; i < stepCount; i++) {
                 values.put(StairsProvider._ID, i);
                 mResolver.insert(StairsProvider.URI, values);
             }
-            int id;
+            int value;
             do {
                 values.clear();
-                id = stream.read();
+                int id = stream.read();
+                if (id < 0) {
+                    break;
+                }
                 values.put(StairsProvider._ID, id);
                 values.put(StairsProvider.IR_VALUE, stream.read());
                 values.put(StairsProvider.LIGHT_VALUE, stream.read());
                 values.put(StairsProvider.IR_THRESHOLD, stream.read());
                 values.put(StairsProvider.LIGHT_THRESHOLD, stream.read());
-                stream.read(); //newline
+                value = stream.read(); //newline
                 Log.d(TAG, "Received values for row " + id);
                 mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
                         new String[]{String.valueOf(id)});
-            } while (!isCancelled() && id >= 0);
+            } while (!isCancelled() && value >= 0);
             Log.d(TAG, "Exiting socket main thread");
         } catch (IOException e) {
             Log.e(TAG, "Could not open socket", e);
@@ -91,6 +98,8 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
             } catch (IOException e) {
                 Log.w(TAG, "Could not close socket", e);
             }
+        } else {
+            Log.d(TAG, "Socket already closed.");
         }
         if (mCancelListener != null) {
             mCancelListener.onCancel();

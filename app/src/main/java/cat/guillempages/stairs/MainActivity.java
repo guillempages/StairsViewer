@@ -58,6 +58,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 } else {
                     if (mNetworkThread != null && !mNetworkThread.isCancelled()) {
+                        Log.d(TAG, "Cancel network thread");
                         mNetworkThread.cancel(true);
                     }
                 }
