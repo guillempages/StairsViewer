@@ -65,26 +65,30 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                 values.put(StairsProvider._ID, i);
                 mResolver.insert(StairsProvider.URI, values);
             }
-            int value;
             do {
                 values.clear();
-                int id = readStream.read();
-                if (id < 0) {
+                if (!mSocket.isConnected() || mSocket.isClosed()) {
                     break;
                 }
-                values.put(StairsProvider._ID, id);
-                values.put(StairsProvider.IR_VALUE, readStream.read());
-                values.put(StairsProvider.LIGHT_VALUE, readStream.read());
-                values.put(StairsProvider.IR_THRESHOLD, readStream.read());
-                values.put(StairsProvider.LIGHT_THRESHOLD, readStream.read());
-                value = readStream.read(); //newline
-                Log.v(TAG, "Received values for row " + id);
-                mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
-                        new String[]{String.valueOf(id)});
                 if (!mQueue.isEmpty()) {
                     writeStream.write(mQueue.poll().getBytes());
                 }
-            } while (!isCancelled() && value >= 0);
+                if (readStream.available() > 0) {
+                    int id = readStream.read();
+                    if (id < 0) {
+                        break;
+                    }
+                    values.put(StairsProvider._ID, id);
+                    values.put(StairsProvider.IR_VALUE, readStream.read());
+                    values.put(StairsProvider.LIGHT_VALUE, readStream.read());
+                    values.put(StairsProvider.IR_THRESHOLD, readStream.read());
+                    values.put(StairsProvider.LIGHT_THRESHOLD, readStream.read());
+                    readStream.read(); //newline
+                    Log.v(TAG, "Received values for row " + id);
+                    mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
+                            new String[]{String.valueOf(id)});
+                }
+            } while (!isCancelled());
             Log.d(TAG, "Exiting socket main thread");
         } catch (IOException e) {
             Log.e(TAG, "Could not open socket", e);
