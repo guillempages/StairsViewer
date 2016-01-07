@@ -16,7 +16,7 @@ import java.net.Socket;
  * <p/>
  * Created by guillem on 28/11/2015.
  */
-public class NetworkThread extends AsyncTask<Void, Void, Void> {
+public class NetworkThread extends AsyncTask<Void, Integer, Void> {
 
     public static final String TAG = "StairsNetworkThread";
     private final ContentResolver mResolver;
@@ -25,6 +25,7 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
     private Socket mSocket;
 
     private CancellationSignal.OnCancelListener mCancelListener;
+    private ModeListener mModeListener;
 
     NetworkThread(final Context context, final String address, final int port) {
         mResolver = context.getContentResolver();
@@ -56,6 +57,9 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
             InputStream stream = mSocket.getInputStream();
             int stepCount = stream.read();
             Log.d(TAG, "Received step count: " + stepCount);
+            int mode = stream.read();
+            publishProgress(mode);
+            Log.d(TAG, "Received current mode: " + mode);
             if (stream.read() < 0) {//newline
                 return null;
             }
@@ -90,6 +94,14 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
+    protected void onProgressUpdate(final Integer... values) {
+        super.onProgressUpdate(values);
+        if (values != null && mModeListener != null) {
+            mModeListener.updateMode(values[0]);
+        }
+    }
+
+    @Override
     protected void onPostExecute(final Void aVoid) {
         super.onPostExecute(aVoid);
         closeSocket();
@@ -111,7 +123,23 @@ public class NetworkThread extends AsyncTask<Void, Void, Void> {
         }
     }
 
-    public void setOnCancelledListener(CancellationSignal.OnCancelListener listener) {
+    public void setOnCancelledListener(final CancellationSignal.OnCancelListener listener) {
         mCancelListener = listener;
+    }
+
+    public void setModeListener(final ModeListener listener) {
+        mModeListener = listener;
+    }
+
+    /**
+     * Interface for classes that can receive a mode update.
+     */
+    public interface ModeListener {
+        /**
+         * Called when the mode has been updated.
+         *
+         * @param mode The new mode.
+         */
+        void updateMode(final int mode);
     }
 }

@@ -16,10 +16,11 @@ import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
+import android.widget.TextView;
 import android.widget.ToggleButton;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>,
-        CancellationSignal.OnCancelListener {
+        CancellationSignal.OnCancelListener, NetworkThread.ModeListener {
 
     private static final String[] IP_LIST = {"server", "spark1", "spark2", "spark3", "spark4", "spark5",
             "photon1", "photon2", "photon3"};
@@ -33,6 +34,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     private CursorAdapter mStepValuesAdapter;
     private NetworkThread mNetworkThread;
     private ToggleButton mConnectButton;
+    private TextView mModeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +56,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                     mNetworkThread = new NetworkThread(MainActivity.this,
                             (String) mIpSelection.getSelectedItem(), PORT);
                     mNetworkThread.setOnCancelledListener(MainActivity.this);
+                    mNetworkThread.setModeListener(MainActivity.this);
                     mNetworkThread.execute();
                     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 } else {
@@ -64,6 +67,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 }
             }
         });
+
+        mModeView = (TextView) findViewById(R.id.mode_view);
     }
 
     @Override
@@ -106,6 +111,13 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     public void onCancel() {
         Log.d(TAG, "Connection lost");
         mConnectButton.setChecked(false);
+        mModeView.setVisibility(View.INVISIBLE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
+    @Override
+    public void updateMode(final int mode) {
+        mModeView.setVisibility(View.VISIBLE);
+        mModeView.setText(getResources().getStringArray(R.array.remote_modes)[mode]);
     }
 }
