@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="server_list">
+        <item>server</item>
+        <item>spark1</item>
+        <item>spark2</item>
+        <item>spark3</item>
+        <item>spark4</item>
+        <item>spark5</item>
+        <item>photon1</item>
+        <item>photon2</item>
+        <item>photon3</item>
+    </string-array>
+</resources>

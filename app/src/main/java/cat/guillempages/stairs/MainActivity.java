@@ -25,8 +25,6 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         CancellationSignal.OnCancelListener, NetworkThread.ModeListener {
 
     public static final String NET_CMD_CHANGE_MODE = "\u0010";
-    private static final String[] IP_LIST = {"server", "spark1", "spark2", "spark3", "spark4", "spark5",
-            "photon1", "photon2", "photon3"};
     private static final int PORT = 2222;
     private static final String TAG = "StairsMainActivity";
     private Spinner mIpSelection;
@@ -43,7 +41,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mHostNamesAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                IP_LIST);
+                getResources().getStringArray(R.array.server_list));
         mIpSelection = (Spinner) findViewById(R.id.ip_selector);
         mIpSelection.setAdapter(mHostNamesAdapter);
         mTable = (ListView) findViewById(R.id.table);
