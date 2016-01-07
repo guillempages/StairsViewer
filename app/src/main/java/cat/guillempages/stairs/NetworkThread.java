@@ -36,12 +36,6 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
     }
 
     @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        Log.d(TAG, "preexecute.");
-    }
-
-    @Override
     protected Void doInBackground(final Void... params) {
         Log.d(TAG, "doInBackground");
         try {
@@ -81,7 +75,7 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                 values.put(StairsProvider.IR_THRESHOLD, stream.read());
                 values.put(StairsProvider.LIGHT_THRESHOLD, stream.read());
                 value = stream.read(); //newline
-                Log.d(TAG, "Received values for row " + id);
+                Log.v(TAG, "Received values for row " + id);
                 mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
                         new String[]{String.valueOf(id)});
             } while (!isCancelled() && value >= 0);
