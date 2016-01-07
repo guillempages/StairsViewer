@@ -86,7 +86,6 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                         new String[]{String.valueOf(id)});
             } while (!isCancelled() && value >= 0);
             Log.d(TAG, "Exiting socket main thread");
-            closeSocket();
         } catch (IOException e) {
             Log.e(TAG, "Could not open socket", e);
         }
@@ -105,9 +104,11 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
     protected void onPostExecute(final Void aVoid) {
         super.onPostExecute(aVoid);
         closeSocket();
-        if (mCancelListener != null) {
-            mCancelListener.onCancel();
-        }
+    }
+
+    @Override
+    protected void onCancelled(Void aVoid) {
+        closeSocket();
     }
 
     private void closeSocket() {
@@ -120,6 +121,9 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
             }
         } else {
             Log.d(TAG, "Socket already closed.");
+        }
+        if (mCancelListener != null) {
+            mCancelListener.onCancel();
         }
     }
 
