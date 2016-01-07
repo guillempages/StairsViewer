@@ -2,15 +2,6 @@
     <string name="app_name">Stairs</string>
     <string name="connect">connect</string>
     <string name="disconnect">disconnect</string>
+    <string name="mode_dialog_title">Choose new mode</string>
 
-    <string-array name="remote_modes">
-        <item>Idle</item>
-        <item>Normal</item>
-        <item>ON</item>
-        <item>OFF</item>
-        <item>Blink</item>
-        <item>Blink alternate</item>
-        <item>Running light</item>
-        <item>Running hole</item>
-    </string-array>
 </resources>

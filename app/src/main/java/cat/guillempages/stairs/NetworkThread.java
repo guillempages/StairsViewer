@@ -9,7 +9,9 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Background thread to receive data from a socket.
@@ -22,8 +24,8 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
     private final ContentResolver mResolver;
     private final String mAddress;
     private final int mPort;
+    private final ConcurrentLinkedQueue<String> mQueue = new ConcurrentLinkedQueue<>();
     private Socket mSocket;
-
     private CancellationSignal.OnCancelListener mCancelListener;
     private ModeListener mModeListener;
 
@@ -48,13 +50,14 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
             //Clear the table on connection
             mResolver.delete(StairsProvider.URI, null, null);
 
-            InputStream stream = mSocket.getInputStream();
-            int stepCount = stream.read();
+            final InputStream readStream = mSocket.getInputStream();
+            final OutputStream writeStream = mSocket.getOutputStream();
+            int stepCount = readStream.read();
             Log.d(TAG, "Received step count: " + stepCount);
-            int mode = stream.read();
+            int mode = readStream.read();
             publishProgress(mode);
             Log.d(TAG, "Received current mode: " + mode);
-            if (stream.read() < 0) {//newline
+            if (readStream.read() < 0) {//newline
                 return null;
             }
             ContentValues values = new ContentValues();
@@ -65,19 +68,22 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
             int value;
             do {
                 values.clear();
-                int id = stream.read();
+                int id = readStream.read();
                 if (id < 0) {
                     break;
                 }
                 values.put(StairsProvider._ID, id);
-                values.put(StairsProvider.IR_VALUE, stream.read());
-                values.put(StairsProvider.LIGHT_VALUE, stream.read());
-                values.put(StairsProvider.IR_THRESHOLD, stream.read());
-                values.put(StairsProvider.LIGHT_THRESHOLD, stream.read());
-                value = stream.read(); //newline
+                values.put(StairsProvider.IR_VALUE, readStream.read());
+                values.put(StairsProvider.LIGHT_VALUE, readStream.read());
+                values.put(StairsProvider.IR_THRESHOLD, readStream.read());
+                values.put(StairsProvider.LIGHT_THRESHOLD, readStream.read());
+                value = readStream.read(); //newline
                 Log.v(TAG, "Received values for row " + id);
                 mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
                         new String[]{String.valueOf(id)});
+                if (!mQueue.isEmpty()) {
+                    writeStream.write(mQueue.poll().getBytes());
+                }
             } while (!isCancelled() && value >= 0);
             Log.d(TAG, "Exiting socket main thread");
         } catch (IOException e) {
@@ -127,6 +133,10 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
 
     public void setModeListener(final ModeListener listener) {
         mModeListener = listener;
+    }
+
+    public void write(final String text) {
+        mQueue.add(text);
     }
 
     /**

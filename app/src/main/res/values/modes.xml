@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="remote_modes">
+        <item>Idle</item>
+        <item>Normal</item>
+        <item>ON</item>
+        <item>OFF</item>
+        <item>Blink</item>
+        <item>Blink alternate</item>
+        <item>Running light</item>
+        <item>Running hole</item>
+    </string-array>
+</resources>

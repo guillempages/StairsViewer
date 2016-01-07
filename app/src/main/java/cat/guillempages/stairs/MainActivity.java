@@ -1,8 +1,10 @@
 package cat.guillempages.stairs;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -22,19 +24,19 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>,
         CancellationSignal.OnCancelListener, NetworkThread.ModeListener {
 
+    public static final String NET_CMD_CHANGE_MODE = "\u0010";
     private static final String[] IP_LIST = {"server", "spark1", "spark2", "spark3", "spark4", "spark5",
             "photon1", "photon2", "photon3"};
-
     private static final int PORT = 2222;
     private static final String TAG = "StairsMainActivity";
-
     private Spinner mIpSelection;
     private ListView mTable;
     private SpinnerAdapter mHostNamesAdapter;
     private CursorAdapter mStepValuesAdapter;
     private NetworkThread mNetworkThread;
     private ToggleButton mConnectButton;
-    private TextView mModeView;
+    private TextView mModeButton;
+    private int mCurrentMode = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +70,32 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
             }
         });
 
-        mModeView = (TextView) findViewById(R.id.mode_view);
+        mModeButton = (TextView) findViewById(R.id.mode_button);
+        mModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View view) {
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(MainActivity.this);
+                dialogBuilder.setTitle(R.string.mode_dialog_title);
+                dialogBuilder.setSingleChoiceItems
+                        (getResources().getStringArray(R.array.remote_modes), mCurrentMode,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(final DialogInterface dialog, final int mode) {
+                                        Log.d(TAG, "New Mode requested: " + mode);
+                                        mNetworkThread.write(NET_CMD_CHANGE_MODE + mode + "\n");
+                                        dialog.dismiss();
+                                    }
+                                });
+                dialogBuilder.create().show();
+            }
+        });
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().initLoader(0, null, this);
-        SharedPreferences prefs = getSharedPreferences(getPackageName(),0);
+        SharedPreferences prefs = getSharedPreferences(getPackageName(), 0);
         mIpSelection.setSelection(prefs.getInt("LastConnection", 0));
     }
 
@@ -86,7 +106,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
             mNetworkThread.cancel(true);
         }
         onCancel();
-        SharedPreferences.Editor prefs = getSharedPreferences(getPackageName(),0).edit();
+        SharedPreferences.Editor prefs = getSharedPreferences(getPackageName(), 0).edit();
         prefs.putInt("LastConnection", mIpSelection.getSelectedItemPosition());
         prefs.apply();
         super.onPause();
@@ -111,13 +131,28 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     public void onCancel() {
         Log.d(TAG, "Connection lost");
         mConnectButton.setChecked(false);
-        mModeView.setVisibility(View.INVISIBLE);
+        mModeButton.setVisibility(View.INVISIBLE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override
-    public void updateMode(final int mode) {
-        mModeView.setVisibility(View.VISIBLE);
-        mModeView.setText(getResources().getStringArray(R.array.remote_modes)[mode]);
+    public void updateMode(final int newMode) {
+        int mode = newMode;
+        /*
+         Convert "ASCII modes" to normal modes. If the mode is sent as an ascii number, convert it.
+        */
+        if (mode >= '0' && mode <= '9') {
+            mode -= '0';
+        }
+        Log.d(TAG, "Updating mode to " + mode);
+        mCurrentMode = mode;
+        final String[] remoteModes = getResources().getStringArray(R.array.remote_modes);
+
+        if (mode >= 0 && mode < remoteModes.length) {
+            mModeButton.setVisibility(View.VISIBLE);
+            mModeButton.setText(remoteModes[mode]);
+        } else {
+            mModeButton.setVisibility(View.INVISIBLE);
+        }
     }
 }

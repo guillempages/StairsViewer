@@ -25,12 +25,13 @@
         android:textOff="@string/connect"
         android:textOn="@string/disconnect"/>
 
-    <TextView
-        android:id="@+id/mode_view"
+    <Button
+        android:id="@+id/mode_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@+id/connect_button"
-        android:layout_below="@+id/connect_button"/>
+        android:layout_below="@+id/connect_button"
+        android:visibility="invisible"/>
 
     <ListView
         android:id="@+id/table"
