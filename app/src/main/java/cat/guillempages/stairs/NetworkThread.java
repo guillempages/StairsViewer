@@ -22,6 +22,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class NetworkThread extends AsyncTask<Void, Integer, Void> {
 
     public static final String TAG = "StairsNetworkThread";
+    private static final byte[] DISCONNECT_COMMAND = {
+            MainActivity.NET_CMD_DISCONNECT,
+            MainActivity.NET_END_OF_COMMAND};
     private final ContentResolver mResolver;
     private final String mAddress;
     private final int mPort;
@@ -72,7 +75,6 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                     break;
                 }
                 if (!mQueue.isEmpty()) {
-
                     final byte[] bytesToWrite = mQueue.poll().getBytes();
                     writeStream.write(bytesToWrite);
                     Log.d(TAG, "Wrote: " + Arrays.toString(bytesToWrite));
@@ -89,10 +91,16 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                     values.put(StairsProvider.LIGHT_THRESHOLD, readStream.read());
                     readStream.read(); //newline
                     Log.v(TAG, "Received values for row " + id);
+                    Log.v(TAG, values.toString());
                     mResolver.update(StairsProvider.URI, values, StairsProvider._ID + "=?",
                             new String[]{String.valueOf(id)});
                 }
             } while (!isCancelled());
+            if (isCancelled()) {
+                final byte[] bytesToWrite = DISCONNECT_COMMAND;
+                writeStream.write(bytesToWrite);
+                Log.d(TAG, "Wrote: " + Arrays.toString(bytesToWrite));
+            }
             Log.d(TAG, "Exiting socket main thread");
         } catch (IOException e) {
             Log.e(TAG, "Could not open socket", e);

@@ -25,6 +25,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         CancellationSignal.OnCancelListener, NetworkThread.ModeListener {
 
     public static final byte NET_CMD_CHANGE_MODE = 0x10;
+    public static final byte NET_CMD_DISCONNECT = 0x20;
+    public static final byte NET_END_OF_COMMAND = '\n';
+
     private static final int PORT = 2222;
     private static final String TAG = "StairsMainActivity";
     private Spinner mIpSelection;
@@ -81,7 +84,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                     public void onClick(final DialogInterface dialog, final int mode) {
                                         Log.d(TAG, "New Mode requested: " + mode);
                                         mNetworkThread.write(new byte[] {
-                                                NET_CMD_CHANGE_MODE, (byte) mode, '\n'
+                                                NET_CMD_CHANGE_MODE, (byte) mode, NET_END_OF_COMMAND
                                         });
                                         dialog.dismiss();
                                     }
