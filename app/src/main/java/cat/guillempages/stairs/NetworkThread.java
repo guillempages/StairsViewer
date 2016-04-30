@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -71,7 +72,10 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                     break;
                 }
                 if (!mQueue.isEmpty()) {
-                    writeStream.write(mQueue.poll().getBytes());
+
+                    final byte[] bytesToWrite = mQueue.poll().getBytes();
+                    writeStream.write(bytesToWrite);
+                    Log.d(TAG, "Wrote: " + Arrays.toString(bytesToWrite));
                 }
                 if (readStream.available() > 0) {
                     int id = readStream.read();
@@ -137,6 +141,10 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
 
     public void setModeListener(final ModeListener listener) {
         mModeListener = listener;
+    }
+
+    public void write(final byte[] byteArray) {
+        write(new String(byteArray));
     }
 
     public void write(final String text) {

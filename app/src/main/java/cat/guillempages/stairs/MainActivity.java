@@ -24,7 +24,7 @@ import android.widget.ToggleButton;
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor>,
         CancellationSignal.OnCancelListener, NetworkThread.ModeListener {
 
-    public static final String NET_CMD_CHANGE_MODE = "\u0010";
+    public static final byte NET_CMD_CHANGE_MODE = 0x10;
     private static final int PORT = 2222;
     private static final String TAG = "StairsMainActivity";
     private Spinner mIpSelection;
@@ -80,7 +80,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                     @Override
                                     public void onClick(final DialogInterface dialog, final int mode) {
                                         Log.d(TAG, "New Mode requested: " + mode);
-                                        mNetworkThread.write(NET_CMD_CHANGE_MODE + mode + "\n");
+                                        mNetworkThread.write(new byte[] {
+                                                NET_CMD_CHANGE_MODE, (byte) mode, '\n'
+                                        });
                                         dialog.dismiss();
                                     }
                                 });
