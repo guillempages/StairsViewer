@@ -86,6 +86,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                         mNetworkThread.write(new byte[] {
                                                 NET_CMD_CHANGE_MODE, (byte) mode, NET_END_OF_COMMAND
                                         });
+                                        updateMode(mode);
                                         dialog.dismiss();
                                     }
                                 });
