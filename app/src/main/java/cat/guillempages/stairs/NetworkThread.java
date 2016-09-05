@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class NetworkThread extends AsyncTask<Void, Integer, Void> {
 
     public static final String TAG = "StairsNetworkThread";
+    public static final int BYTES_PER_STEP = 6; // id, ir_v, light_v, ir_tr, light_tr, "\n"
     private static final byte[] DISCONNECT_COMMAND = {
             MainActivity.NET_CMD_DISCONNECT,
             MainActivity.NET_END_OF_COMMAND};
@@ -79,9 +80,10 @@ public class NetworkThread extends AsyncTask<Void, Integer, Void> {
                     writeStream.write(bytesToWrite);
                     Log.d(TAG, "Wrote: " + Arrays.toString(bytesToWrite));
                 }
-                if (readStream.available() > 0) {
+                if (readStream.available() >= BYTES_PER_STEP) {
                     int id = readStream.read();
                     if (id < 0) {
+                        Log.w(TAG, "Invalid ID received: " + id);
                         break;
                     }
                     values.put(StairsProvider._ID, id);
